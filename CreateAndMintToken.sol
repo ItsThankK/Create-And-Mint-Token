@@ -1,43 +1,35 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.20;
 
-contract MyToken {
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-    // public variables here
-    address owner;
+contract TkToken is ERC20 {
 
-    string public tokenName = "MyToken";
-    string public tokenSymbol = "MT";
-    uint public totalSupply = 0;
+    address owner = msg.sender;
 
-    // mapping variable here
-    mapping(address => uint) public balances;
-
-    constructor() {
-        owner = msg.sender;
+    constructor() ERC20("TkToken", "TkT") {
+        // Mint initial supply to the contract deployer
+        _mint(msg.sender, 10 * 10**decimals());
     }
 
-    // Mint function
-    function mintMyToken(uint _value) public {
-        
-        require(owner == msg.sender,"ONLY OWNER CAN MINT!!!");
-        totalSupply += _value;
-        balances[msg.sender] += _value;
+    modifier onlyOwner {
+        require(owner == msg.sender);
+        _;
     }
 
-    // Burn function
-    function burnMytoken(uint _value) public {
-        require(balances[msg.sender] >= _value, "INSUFFICIENT FUNDS!!!");
-        totalSupply -= _value;
-        balances[msg.sender] -= _value;
+    // Function to mint new tokens
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
     }
 
-    // Transfer function
-    function transferMyToken(address payable recipient, uint256 amount) public payable{
-        require(balances[msg.sender] >= amount, "INSUFFICIENT FUNDS!!!");
-        balances[msg.sender] -= amount;
-        balances[recipient] += amount;
+    // Function to burn tokens
+    function burn(uint256 amount) public {
+        _burn(msg.sender, amount);
     }
 
-
+    // Function to transfer tokens
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        _transfer(msg.sender, to, amount);
+        return true;
+    }
 }
